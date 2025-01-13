@@ -4,4 +4,4 @@ enum EMOJIS {
     MAYBE = ":hubEdit:1203532988181258301:"
 }
 
-export { EMOJIS }
+export { EMOJIS };

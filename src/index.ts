@@ -1,17 +1,17 @@
-import { IntentsBitField } from "discord.js"
+import { type ClientEvents, IntentsBitField, OAuth2Scopes } from "discord.js"
 import "dotenv/config"
-import { drizzle } from "drizzle-orm/node-postgres"
+import { readdirSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { inspect } from "node:util"
 import { SlashasaurusClient } from "slashasaurus"
-import * as schema from "./db/schema.js"
-import { logger } from "./util/logger.js"
+import { logger } from "./util/logger"
 
 const client = new SlashasaurusClient(
     {
         intents: [
-            IntentsBitField.Flags.Guilds
-            // others
+            IntentsBitField.Flags.Guilds,
+            IntentsBitField.Flags.GuildMessages
         ]
     },
     {
@@ -19,16 +19,34 @@ const client = new SlashasaurusClient(
     }
 )
 
-const db = drizzle(process.env.PG_URI, { schema, casing: "snake_case" })
+
+const d = dirname(fileURLToPath(import.meta.url))
+const events = join(d, "events")
+const commands = join(d, "commands")
+
+for (const file of readdirSync(events)) {
+    const event = (await import(join(events, file))).default
+    const eventName = file.replace(/\.(js|ts)$/, '') as keyof ClientEvents
+
+    client.on(eventName, async (...args) => event(client, ...args));
+}
 
 client.once("ready", async () => {
-    const p = dirname(fileURLToPath(import.meta.url))
-
-    client.registerCommandsFrom(join(p, "commands"), true, process.env.TOKEN)
+    //client.registerCommandsFrom(commands, true, process.env.TOKEN)
+    client.registerGuildCommandsFrom(commands, "342506939340685312", true, process.env.TOKEN)
 
     logger.info(`Client ready and logged in as ${client.user?.tag}`)
+    logger.info(`Invite me with ${client.generateInvite({ scopes: [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands] })}`)
 })
+
+process.on('unhandledRejection', (reason) => {
+    logger.error(`${reason}`)
+})
+
+process.on('uncaughtException', (reason) => {
+    logger.error(`${reason}`)
+});
 
 client.login(process.env.TOKEN)
 
-export { client as Adapto, db }
+export { client as JunoBot }

@@ -1,7 +1,7 @@
-import 'dotenv/config';
-import type { Config } from "drizzle-kit";
+import 'dotenv/config'
+import type { Config } from "drizzle-kit"
 
-if(process.env.PG_URI === undefined) {
+if (process.env.PG_URI === undefined) {
     throw new Error("DATABASE_URL is not defined");
 }
 

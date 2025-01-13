@@ -1,5 +1,5 @@
 {
-    "[typescript]": {
+    "[javascript][typescript]": {
         "editor.defaultFormatter": "biomejs.biome"
     }
 }
