@@ -1,44 +1,50 @@
-import { getOptionsFor } from "@/util/options";
-import type { ClientEvents, User } from "discord.js";
-import type { SlashasaurusClient } from "slashasaurus";
+import { chat } from "@/util/chat"
+import { getOptionsFor } from "@/util/options"
+import { getMessageHistory } from "@/util/replies"
+import { type ClientEvents, MessageReferenceType } from "discord.js"
+import type { SlashasaurusClient } from "slashasaurus"
 
-type Message = ClientEvents["messageCreate"][0];
-
-type JunoMessageContent = {
-    user?: User;
-};
+type Message = ClientEvents["messageCreate"][0]
 
 export default async function (client: SlashasaurusClient, message: Message) {
-    if (message.author.bot) return;
+    if (message.author.bot) return
 
-    if (!message.content.startsWith(`<@${client.user.id}>`)) return;
+    const isJunoReply = await isReplyToJuno(client, message)
+    if (!isJunoReply && !message.content.startsWith(`<@${client.user?.id}>`)) return
 
-    const content = message.content.replace(`<@${client.user.id}>`, '').trim()
-    const context = {} as JunoMessageContent
-    
-    if (content.includes("^?")) {
-        if(message.reference?.messageId) {
-            context.user = (await message.fetchReference()).author
-        } else {
-            // we can't use channel.lastMessage, because its the invoking message
-            // however, we can fetch all of the messages and pick the second newest one
-            // d.js counts "first" upwards from the chatbox, the first message is the command itself
-            // we will grab the first two messages, and only access the second
-            context.user = (await message.channel.messages.fetch()).first(2)[1].author
-        }
+    const userOptions = await getOptionsFor(message.author.id)
+    if (userOptions.ignored) return
 
-        if (context.user) {
-            const userOptions = await getOptionsFor(context.user.id)
-            if(userOptions.ignored) {
-                context.user = undefined
-            }
-        }
+    const content = message.content.replace(`<@${client.user?.id}>`, "").trim()
+    if (!content) return
+
+    try {
+        const messageHistory = await getMessageHistory(client, message)
+        const response = await chat(content, messageHistory, message.author)
+
+        await message.reply({
+            content: response,
+            allowedMentions: { repliedUser: true, parse: [] }
+        })
+    } catch (error) {
+        console.error("Error processing message:", error)
+        await message.reply({
+            content: "I encountered an error processing your message. Please try again later.",
+            allowedMentions: { repliedUser: true, parse: [] }
+        })
+    }
+}
+
+async function isReplyToJuno(client: SlashasaurusClient, message: Message): Promise<boolean> {
+    if (message.reference?.type !== MessageReferenceType.Default) {
+        return false
     }
 
-    console.log(content)
-
-    if(context.user) {
-        message.reply(`What about ${context.user.username}?`)
-    } 
-
-} 
+    try {
+        const referenced = await message.fetchReference()
+        return referenced.author.id === client.user?.id
+    } catch (error) {
+        console.error("Error fetching referenced message:", error)
+        return false
+    }
+}

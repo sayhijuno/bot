@@ -1,10 +1,11 @@
+import { chat } from "@/util/chat"
 import { getOptionsFor } from "@/util/options"
 import { ApplicationCommandOptionType, type ChatInputCommandInteraction, MessageFlags } from "discord.js"
 import { SlashCommand } from "slashasaurus"
 
 async function run(interaction: ChatInputCommandInteraction) {
-    const query = interaction.options.getString("query")
-    const ephemeral = interaction.options.getBoolean("ephemeral") ?? true
+    const query = interaction.options.getString("query", true)
+    const ephemeral = interaction.options.getBoolean("ephemeral") ?? false
 
     const userOptions = await getOptionsFor(interaction.user.id)
 
@@ -16,16 +17,21 @@ async function run(interaction: ChatInputCommandInteraction) {
         return
     }
 
+    const response = await chat(query, [], interaction.user)
+
     interaction.reply({
-        content: `${query}`,
-        flags: +ephemeral * MessageFlags.Ephemeral // (true * Ephemeral === Ephemeral) and (false * Ephemeral === 0) ! 
+        content: response,
+        allowedMentions: { repliedUser: true, parse: [] },
+        flags: +ephemeral * MessageFlags.Ephemeral // (true * Ephemeral === Ephemeral) and (false * Ephemeral === 0) !
     })
 }
 
 export default new SlashCommand(
     {
         name: "heyai",
-        description: "Ask an AI model anything!",
+        description: "Ask Juno anything!",
+        contexts: [0, 1, 2],
+        integrationTypes: [0, 1],
         options: [
             {
                 type: ApplicationCommandOptionType.String,

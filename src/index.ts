@@ -1,10 +1,12 @@
+import { serve } from "@hono/node-server"
 import { type ClientEvents, IntentsBitField, OAuth2Scopes } from "discord.js"
 import "dotenv/config"
 import { readdirSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { inspect } from "node:util"
+import { version } from "package.json"
 import { SlashasaurusClient } from "slashasaurus"
+import { transponder } from "./server"
 import { logger } from "./util/logger"
 
 const client = new SlashasaurusClient(
@@ -32,8 +34,8 @@ for (const file of readdirSync(events)) {
 }
 
 client.once("ready", async () => {
-    //client.registerCommandsFrom(commands, true, process.env.TOKEN)
-    client.registerGuildCommandsFrom(commands, "342506939340685312", true, process.env.TOKEN)
+    client.registerCommandsFrom(commands, true, process.env.TOKEN)
+    //client.registerGuildCommandsFrom(commands, "342506939340685312", true, process.env.TOKEN)
 
     logger.info(`Client ready and logged in as ${client.user?.tag}`)
     logger.info(`Invite me with ${client.generateInvite({ scopes: [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands] })}`)
@@ -48,5 +50,17 @@ process.on('uncaughtException', (reason) => {
 });
 
 client.login(process.env.TOKEN)
+
+serve(
+    {
+        fetch: transponder.fetch,
+        port: Number.parseInt(process.env.API_PORT ?? "3005"),
+    },
+    (addr) => {
+        const bindAddr = `http://${addr.family === 'IPv6' ? `[${addr.address}]` : addr.address}`;
+
+        console.log(`Juno Transponder Service ${version} - ${bindAddr}`);
+    },
+);
 
 export { client as JunoBot }
