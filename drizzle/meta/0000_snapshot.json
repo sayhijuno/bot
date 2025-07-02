@@ -1,0 +1,68 @@
+{
+  "id": "e5923ba7-937a-42ff-ac26-42c94b558d19",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.options": {
+      "name": "options",
+      "schema": "",
+      "columns": {
+        "userid": {
+          "name": "userid",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ignored": {
+          "name": "ignored",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {
+    "public.ignored": {
+      "columns": {
+        "userid": {
+          "name": "userid",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ignored": {
+          "name": "ignored",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "definition": "select \"userid\", \"ignored\" from \"options\" where \"options\".\"ignored\" = true",
+      "name": "ignored",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    }
+  },
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
