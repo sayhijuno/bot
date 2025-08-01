@@ -1,23 +1,28 @@
+import type { ChatMessage } from "@/types/api"
+import type { User } from "discord.js"
 import { time, timeEnd } from "node:console"
 import { readFileSync } from "node:fs"
 import { env } from "node:process"
-import type { ChatMessage } from "@/types/api"
-import type { User } from "discord.js"
 import OpenAI from "openai"
-import { JUNO_ERROR, JUNO_TOOL_CALL_RECURSION } from "./errors"
+import { MSG_ERROR, MSG_TOOL_RECURSION } from "./consts"
 import { TOOL_REGISTRY, type ToolName, tools } from "./tools"
 
 const client = new OpenAI({
     apiKey: env.OPENROUTER_API_KEY,
-    baseURL: `https://gateway.ai.cloudflare.com/v1/${env.CLOUDFLARE_API_ID}/juno/openrouter`,
-    //baseURL: "https://openrouter.ai/api/v1"
+    baseURL: env.OPENAI_BASE_URL,
     defaultHeaders: {
         "cf-aig-authorization": `Bearer ${env.CLOUDFLARE_AIG_KEY}`
-    }
+    },
 })
 
-let systemPrompt = readFileSync("./src/util/prompt.txt", { encoding: "utf-8" })
-systemPrompt = systemPrompt.replaceAll("$DATE", new Date().toISOString().split("T")[0])
+const promptableDate = new Date().toISOString().split("T")[0]
+
+let systemPrompt = readFileSync("./src/util/prompts/system.txt", { encoding: "utf-8" })
+systemPrompt = systemPrompt.replaceAll("$DATE", promptableDate)
+
+let searchPrompt = readFileSync("./src/util/prompts/search.txt", { encoding: "utf-8" })
+searchPrompt = systemPrompt.replaceAll("$DATE", promptableDate)
+
 
 export async function chat(content: string, messageHistory: ChatMessage[], author: User) {
     time("juno")
@@ -38,7 +43,15 @@ export async function chat(content: string, messageHistory: ChatMessage[], autho
             const response = await client.chat.completions.create({
                 model: env.OPENROUTER_MODEL,
                 messages,
-                tools
+                tools,
+                // @ts-expect-error
+                //plugins: [
+                //  {
+                //    "id": "web",
+                //    "max_results": 3,
+                //    "search_prompt": searchPrompt
+                //  }
+                //]
             }, {
                 headers: {
                     "cf-aig-metadata": JSON.stringify({
@@ -54,7 +67,7 @@ export async function chat(content: string, messageHistory: ChatMessage[], autho
             
             if (!assistantMessage.tool_calls?.length) {
                 timeEnd("juno")
-                return assistantMessage.content || JUNO_ERROR
+                return assistantMessage.content || MSG_ERROR
             }
 
             messages.push({
@@ -81,11 +94,15 @@ export async function chat(content: string, messageHistory: ChatMessage[], autho
 
         timeEnd("juno")
         console.warn(`Hit maximum iterations (${maxIterations}) in agentic loop`)
-        return JUNO_TOOL_CALL_RECURSION
-
+        return MSG_TOOL_RECURSION
     } catch (error) {
         timeEnd("juno")
         console.error("Error in chat function:", error)
-        return JUNO_ERROR
+        // When the response includes an error, return the result of the error
+        // If the error is an object instead of a string, return JUNO_EXPLICIT
+        if (typeof error === 'string') {
+            return error
+        }
+        return error.message ?? "JUNO_WTF"
     }
 }

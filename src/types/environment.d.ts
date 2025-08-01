@@ -8,6 +8,7 @@ declare global {
             OPENROUTER_MODEL: string
             CLOUDFLARE_API_ID: string
             CLOUDFLARE_AIG_KEY: string
+            OPENAI_BASE_URL: string
         }
     }
 }

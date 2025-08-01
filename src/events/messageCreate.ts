@@ -1,7 +1,7 @@
 import { chat } from "@/util/chat"
 import { getOptionsFor } from "@/util/options"
 import { getMessageHistory } from "@/util/replies"
-import { type ClientEvents, MessageReferenceType } from "discord.js"
+import { type ClientEvents, MessageFlags, MessageReferenceType } from "discord.js"
 import type { SlashasaurusClient } from "slashasaurus"
 
 type Message = ClientEvents["messageCreate"][0]
@@ -24,7 +24,8 @@ export default async function (client: SlashasaurusClient, message: Message) {
 
         await message.reply({
             content: response,
-            allowedMentions: { repliedUser: true, parse: [] }
+            allowedMentions: { repliedUser: true, parse: [] },
+            flags: MessageFlags.SuppressEmbeds
         })
     } catch (error) {
         console.error("Error processing message:", error)
