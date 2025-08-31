@@ -9,7 +9,7 @@ npm run start
 
 ### This template requires a database!
 
-Here's a command to get you started with the default `PG_URI`:
+Here's a command to get you started with the default `DB_URI`:
 
 `docker run -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres`
 

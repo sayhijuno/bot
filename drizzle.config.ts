@@ -2,9 +2,11 @@ import 'dotenv/config'
 import type { Config } from "drizzle-kit"
 import { env } from 'node:process';
 
-if (env.PG_URI === undefined) {
-    throw new Error("DATABASE_URL is not defined");
+if (env.DB_URI === undefined) {
+    throw new Error("DB_URI is not defined");
 }
+
+console.log('DB_URI', env.DB_URI);
 
 export default {
     schema: "./src/db/schema.ts",
@@ -12,6 +14,6 @@ export default {
     casing: "snake_case",
     dialect: "postgresql",
     dbCredentials: {
-        url: env.PG_URI,
+        url: env.DB_URI,
     },
 } satisfies Config;

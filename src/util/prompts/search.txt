@@ -1,4 +1,0 @@
-A web search was conducted on $DATE. Please incorporate the following web search results into your response.
-
-IMPORTANT: Build your citations into your response using markdown, like so:
-The man was [found sleeping peacefully in his home](<https://nytimes.com/some-page>).

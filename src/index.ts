@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server"
-import { type ClientEvents, IntentsBitField, OAuth2Scopes } from "discord.js"
+import { type ClientEvents, GatewayDispatchEvents, IntentsBitField, OAuth2Scopes } from "discord.js"
 import "dotenv/config"
 import { readdirSync } from "node:fs"
 import { dirname, join } from "node:path"
@@ -21,7 +21,6 @@ const client = new SlashasaurusClient(
     }
 )
 
-
 const d = dirname(fileURLToPath(import.meta.url))
 const events = join(d, "events")
 const commands = join(d, "commands")
@@ -33,8 +32,11 @@ for (const file of readdirSync(events)) {
     client.on(eventName, async (...args) => event(client, ...args));
 }
 
-client.once("ready", async () => {
+client.once("clientReady", async () => {
+    logger.info('DB_URI FROM CODE: ' + process.env.DB_URI);
+
     client.registerCommandsFrom(commands, true, process.env.TOKEN)
+
     //client.registerGuildCommandsFrom(commands, "342506939340685312", true, process.env.TOKEN)
 
     logger.info(`Client ready and logged in as ${client.user?.tag}`)
