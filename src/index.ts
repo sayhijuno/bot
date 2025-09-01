@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server"
-import { type ClientEvents, GatewayDispatchEvents, IntentsBitField, OAuth2Scopes } from "discord.js"
+import { type ClientEvents, IntentsBitField, OAuth2Scopes } from "discord.js"
 import "dotenv/config"
 import { readdirSync } from "node:fs"
 import { dirname, join } from "node:path"
@@ -33,8 +33,6 @@ for (const file of readdirSync(events)) {
 }
 
 client.once("clientReady", async () => {
-    logger.info('DB_URI FROM CODE: ' + process.env.DB_URI);
-
     client.registerCommandsFrom(commands, true, process.env.TOKEN)
 
     //client.registerGuildCommandsFrom(commands, "342506939340685312", true, process.env.TOKEN)
@@ -42,14 +40,6 @@ client.once("clientReady", async () => {
     logger.info(`Client ready and logged in as ${client.user?.tag}`)
     logger.info(`Invite me with ${client.generateInvite({ scopes: [OAuth2Scopes.Bot, OAuth2Scopes.ApplicationsCommands] })}`)
 })
-
-process.on('unhandledRejection', (reason) => {
-    logger.error(`${reason}`)
-})
-
-process.on('uncaughtException', (reason) => {
-    logger.error(`${reason}`)
-});
 
 client.login(process.env.TOKEN)
 
@@ -61,7 +51,7 @@ serve(
     (addr) => {
         const bindAddr = `http://${addr.family === 'IPv6' ? `[${addr.address}]` : addr.address}`;
 
-        console.log(`Juno Transponder Service ${version} - ${bindAddr}`);
+        console.log(`Juno Transponder Service ${version} - ${bindAddr}:${addr.port}`);
     },
 );
 

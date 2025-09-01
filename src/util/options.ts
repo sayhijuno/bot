@@ -6,7 +6,7 @@ export async function getOptionsFor(userid: string) {
     let [user] = await db
         .select()
         .from(options)
-        .where(and(eq(options.userid, userid)))
+        .where(eq(options.userid, userid))
     if (user === undefined) {
         [user] = await db.insert(options).values({ userid: userid }).returning()
     }

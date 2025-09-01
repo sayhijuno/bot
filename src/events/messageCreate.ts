@@ -15,16 +15,22 @@ export default async function (client: SlashasaurusClient, message: Message) {
     const userOptions = await getOptionsFor(message.author.id)
     if (userOptions.ignored) return
 
-    const content = message.content.replace(`<@${client.user?.id}>`, "").trim()
+    let content = message.content.replace(`<@${client.user?.id}>`, "").trim()
     if (!content) return
+
+    const webSearch = content.includes("--web") || content.includes("--search")
+    content = content.replace("--web", "").replace("--search", "").trim()
 
     try {
         const messageHistory = await getMessageHistory(client, message)
-        const response = await chat(content, messageHistory, message.author.id, true) 
+        
+        const response = await chat(content, messageHistory, message.author.id, webSearch) 
 
         if (typeof response === 'string') {
-            // TODO: handle this
-            return
+            return await message.reply({
+                content: response,
+                allowedMentions: { repliedUser: true, parse: [] }
+            })
         }
 
         await message.reply({
