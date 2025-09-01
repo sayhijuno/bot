@@ -24,7 +24,14 @@ export default async function (client: SlashasaurusClient, message: Message) {
     try {
         const messageHistory = await getMessageHistory(client, message)
         
-        const response = await chat(content, messageHistory, message.author.id, webSearch) 
+        await message.channel.sendTyping()
+        let typingInterval = setInterval(() => message.channel.sendTyping().catch(() => {}), 10000)
+        
+        const response = await chat(content, messageHistory, message.author.id, webSearch)
+        
+        if (typingInterval) {
+            clearInterval(typingInterval)
+        } 
 
         if (typeof response === 'string') {
             return await message.reply({

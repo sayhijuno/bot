@@ -13,7 +13,8 @@ const client = new SlashasaurusClient(
     {
         intents: [
             IntentsBitField.Flags.Guilds,
-            IntentsBitField.Flags.GuildMessages
+            IntentsBitField.Flags.GuildMessages,
+            IntentsBitField.Flags.MessageContent
         ]
     },
     {
