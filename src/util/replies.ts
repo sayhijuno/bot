@@ -21,8 +21,8 @@ export async function getMessageHistory(client: SlashasaurusClient, message: Mes
                 } else {
                     // For assistant messages (current application), extract from first text component
                     // Juno always sends the main response as the first TextDisplay in the first ActionRow
-                    const actionRow = referencedMessage.components[0] as APIComponentInMessageActionRow
-                    content = (actionRow?.components?.[0]?.content || referencedMessage.content
+                    const actionRow = referencedMessage.components[0]
+                    content = (actionRow as any)?.components?.[0]?.content || referencedMessage.content
                 }
 
                 // Skip if this message would be a duplicate of the previous one in the history
