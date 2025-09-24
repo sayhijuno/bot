@@ -1,4 +1,4 @@
-import { ActionRow, ActionRowData, APIActionRowComponent, APIComponentInMessageActionRow, APIMessageTopLevelComponent, ComponentType, type Message, MessageReferenceType } from "discord.js"
+import { ActionRow, ActionRowData, APIActionRowComponent, APIComponentInMessageActionRow, APIMessageTopLevelComponent, ComponentType, type Message, MessageReferenceType, TextDisplayComponent } from "discord.js"
 import type { SlashasaurusClient } from "slashasaurus"
 import type { ChatMessage } from "@/types/api"
 
@@ -21,8 +21,8 @@ export async function getMessageHistory(client: SlashasaurusClient, message: Mes
                 } else {
                     // For assistant messages (current application), extract from first text component
                     // Juno always sends the main response as the first TextDisplay in the first ActionRow
-                    const actionRow = referencedMessage.components[0]
-                    content = (actionRow as any)?.components?.[0]?.content || referencedMessage.content
+                    const actionRow = referencedMessage.components[0] as TextDisplayComponent
+                    content = actionRow.content
                 }
 
                 // Skip if this message would be a duplicate of the previous one in the history
@@ -47,5 +47,6 @@ export async function getMessageHistory(client: SlashasaurusClient, message: Mes
         }
     }
 
+    console.log(history)
     return history
 }
