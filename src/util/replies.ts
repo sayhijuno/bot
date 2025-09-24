@@ -47,6 +47,5 @@ export async function getMessageHistory(client: SlashasaurusClient, message: Mes
         }
     }
 
-    console.log(history)
     return history
 }
